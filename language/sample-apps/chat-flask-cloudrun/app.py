@@ -10,8 +10,7 @@ vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 def create_session():
     chat_model = ChatModel.from_pretrained("chat-bison@001")
-    chat = chat_model.start_chat()
-    return chat
+    return chat_model.start_chat()
 
 def response(chat, message):
     parameters = {

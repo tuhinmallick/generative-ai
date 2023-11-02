@@ -200,7 +200,7 @@ def imagesearch_genappbuilder() -> str:
 
     if image_file:
         image_content = image_file.read()
-    elif search_query:
+    else:
         # Check if text is a url
         image_url = urlparse(search_query)
         if all([image_url.scheme, image_url.netloc, image_url.path]):
