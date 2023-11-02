@@ -158,9 +158,7 @@ def get_enterprise_search_results(
 
         if cse_thumbnail:
             return cse_thumbnail[0]["src"]
-        if image_link:
-            return image_link
-        return ROBOT
+        return image_link if image_link else ROBOT
 
     def get_formatted_link(data: Dict) -> str:
         html_formatted_url = data.get("htmlFormattedUrl")

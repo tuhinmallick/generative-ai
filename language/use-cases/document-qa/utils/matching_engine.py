@@ -200,7 +200,7 @@ class MatchingEngine(VectorStore):
 
         request = google.auth.transport.requests.Request()
         self.credentials.refresh(request)
-        header = {"Authorization": "Bearer " + self.credentials.token}
+        header = {"Authorization": f"Bearer {self.credentials.token}"}
 
         return requests.post(rpc_address, data=endpoint_json_data, headers=header)
 
@@ -434,13 +434,13 @@ class MatchingEngine(VectorStore):
 
         from google.oauth2 import service_account
 
-        credentials = None
-        if json_credentials_path is not None:
-            credentials = service_account.Credentials.from_service_account_file(
+        return (
+            service_account.Credentials.from_service_account_file(
                 json_credentials_path
             )
-
-        return credentials
+            if json_credentials_path is not None
+            else None
+        )
 
     @classmethod
     def _create_index_by_id(

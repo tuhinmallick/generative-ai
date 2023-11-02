@@ -32,39 +32,31 @@ class MatchingEngineUtils:
         # Check if index exists
         request = aipv1.ListIndexesRequest(parent=self.PARENT)
         page_result = self.index_client.list_indexes(request=request)
-        indexes = [
+        if indexes := [
             response.name
             for response in page_result
             if response.display_name == self.index_name
-        ]
-
-        if len(indexes) == 0:
-            return None
-        else:
+        ]:
             index_id = indexes[0]
             request = aipv1.GetIndexRequest(name=index_id)
-            index = self.index_client.get_index(request=request)
-            return index
+            return self.index_client.get_index(request=request)
+        else:
+            return None
 
     def get_index_endpoint(self):
         # Check if index endpoint exists
         request = aipv1.ListIndexEndpointsRequest(parent=self.PARENT)
         page_result = self.index_endpoint_client.list_index_endpoints(request=request)
-        index_endpoints = [
+        if index_endpoints := [
             response.name
             for response in page_result
             if response.display_name == self.index_endpoint_name
-        ]
-
-        if len(index_endpoints) == 0:
-            return None
-        else:
+        ]:
             index_endpoint_id = index_endpoints[0]
             request = aipv1.GetIndexEndpointRequest(name=index_endpoint_id)
-            index_endpoint = self.index_endpoint_client.get_index_endpoint(
-                request=request
-            )
-            return index_endpoint
+            return self.index_endpoint_client.get_index_endpoint(request=request)
+        else:
+            return None
 
     def create_index(
         self,
@@ -272,11 +264,7 @@ class MatchingEngineUtils:
         return index_id, index_endpoint_id
 
     def delete_index(self):
-        # Check if index exists
-        index = self.get_index()
-
-        # create index if does not exists
-        if index:
+        if index := self.get_index():
             # Delete index
             index_id = index.name
             logger.info(f"Deleting Index {self.index_name} with id {index_id}")
@@ -285,39 +273,34 @@ class MatchingEngineUtils:
             raise Exception("Index {index_name} does not exists.")
 
     def delete_index_endpoint(self):
-        # Check if index endpoint exists
-        index_endpoint = self.get_index_endpoint()
-
-        # Create Index Endpoint if does not exists
-        if index_endpoint:
-            logger.info(
-                f"Index endpoint {self.index_endpoint_name}  exists with resource "
-                + f"name as {index_endpoint.name} and endpoint domain name as "
-                + f"{index_endpoint.public_endpoint_domain_name}"
-            )
-
-            index_endpoint_id = index_endpoint.name
-            index_endpoint = self.index_endpoint_client.get_index_endpoint(
-                name=index_endpoint_id
-            )
-            # Undeploy existing indexes
-            for d_index in index_endpoint.deployed_indexes:
-                logger.info(
-                    f"Undeploying index with id {d_index.id} from Index endpoint {self.index_endpoint_name}"
-                )
-                request = aipv1.UndeployIndexRequest(
-                    index_endpoint=index_endpoint_id, deployed_index_id=d_index.id
-                )
-                r = self.index_endpoint_client.undeploy_index(request=request)
-                response = r.result()
-                logger.info(response)
-
-            # Delete index endpoint
-            logger.info(
-                f"Deleting Index endpoint {self.index_endpoint_name} with id {index_endpoint_id}"
-            )
-            self.index_endpoint_client.delete_index_endpoint(name=index_endpoint_id)
-        else:
+        if not (index_endpoint := self.get_index_endpoint()):
             raise Exception(
                 f"Index endpoint {self.index_endpoint_name} does not exists."
             )
+        logger.info(
+            f"Index endpoint {self.index_endpoint_name}  exists with resource "
+            + f"name as {index_endpoint.name} and endpoint domain name as "
+            + f"{index_endpoint.public_endpoint_domain_name}"
+        )
+
+        index_endpoint_id = index_endpoint.name
+        index_endpoint = self.index_endpoint_client.get_index_endpoint(
+            name=index_endpoint_id
+        )
+        # Undeploy existing indexes
+        for d_index in index_endpoint.deployed_indexes:
+            logger.info(
+                f"Undeploying index with id {d_index.id} from Index endpoint {self.index_endpoint_name}"
+            )
+            request = aipv1.UndeployIndexRequest(
+                index_endpoint=index_endpoint_id, deployed_index_id=d_index.id
+            )
+            r = self.index_endpoint_client.undeploy_index(request=request)
+            response = r.result()
+            logger.info(response)
+
+        # Delete index endpoint
+        logger.info(
+            f"Deleting Index endpoint {self.index_endpoint_name} with id {index_endpoint_id}"
+        )
+        self.index_endpoint_client.delete_index_endpoint(name=index_endpoint_id)

@@ -60,8 +60,7 @@ with st.container():
                 ," \t \t Debug Model: ",st.session_state['debug_mode'])
 
 
-    prompt = st.text_area("Add your prompt: ",height = 100)
-    if prompt:
+    if prompt := st.text_area("Add your prompt: ", height=100):
         st.session_state['prompt'].append(prompt)
         st.markdown("<h3 style='text-align: center; color: blue;'>Generator Model Response</h3>", unsafe_allow_html=True)
         with st.spinner('PaLM is working to generate, wait.....'):
